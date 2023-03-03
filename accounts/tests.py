@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+
 class AuthViewTests(TestCase):
     def setUp(self):
         self.register_url = reverse('register')
@@ -72,6 +73,7 @@ class AuthViewTests(TestCase):
         response = self.client.get(self.logout_url)
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, self.login_url)
+
 
 class ProfileViewTests(TestCase):
     def setUp(self):

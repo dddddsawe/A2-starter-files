@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+
 class Bank(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=120)
@@ -12,6 +13,7 @@ class Bank(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Branch(models.Model):
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE, related_name='branches')

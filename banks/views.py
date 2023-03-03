@@ -1,3 +1,4 @@
+from django.views import View
 from django.views.generic.edit import FormView, UpdateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
@@ -17,10 +18,12 @@ class BankListView(ListView):
     template_name = 'banks/bank_list.html'
     context_object_name = 'bank_list'
 
+
 class BankDetailView(DetailView):
     model = Bank
     template_name = 'banks/bank_detail.html'
     context_object_name = 'bank'
+
 
 class BranchUpdateView(LoginRequiredMixin, UpdateView):
     model = Branch
@@ -58,12 +61,13 @@ class BankCreateView(LoginRequiredMixin, FormView):
         bank.save()
         return super().form_valid(form)
 
+
 class BranchCreateView(LoginRequiredMixin, FormView):
     template_name = 'banks/add_branch.html'
     form_class = BranchForm
 
     def dispatch(self, request, *args, **kwargs):
-        bank_id = kwargs.get('bank_id')
+        bank_id = kwargs.get('pk')  # 更改为'pk'
         self.bank = get_object_or_404(Bank, pk=bank_id)
         if self.bank.owner != self.request.user:
             raise PermissionDenied
@@ -74,6 +78,7 @@ class BranchCreateView(LoginRequiredMixin, FormView):
         branch.bank = self.bank
         branch.save()
         return super().form_valid(form)
+
 
 class BranchDetailsView(View):
     def get(self, request, *args, **kwargs):
@@ -93,6 +98,7 @@ class BranchDetailsView(View):
         }
         return JsonResponse(data)
 
+
 class BankBranchListView(View):
     def get(self, request, *args, **kwargs):
         try:
@@ -110,3 +116,32 @@ class BankBranchListView(View):
             'last_modified': branch.last_modified.isoformat()
         } for branch in branches]
         return JsonResponse(data, safe=False)
+
+
+class BankAllView(View):
+    def get(self, request, *args, **kwargs):
+        banks = Bank.objects.all()
+        data = [{'id': bank.pk, 'name': bank.name} for bank in banks]
+        return JsonResponse(data, safe=False)
+
+
+def bank_all(request):
+    banks = Bank.objects.all().prefetch_related('branches')
+    data = [
+        {
+            'id': bank.pk,
+            'name': bank.name,
+            'branches': [
+                {
+                    'id': branch.pk,
+                    'name': branch.name,
+                    'transit_num': branch.transit_num,
+                    'address': branch.address,
+                    'email': branch.email,
+                    'capacity': branch.capacity,
+                    'last_modified': branch.last_modified.isoformat(),
+                } for branch in bank.branches.all()
+            ],
+        } for bank in banks
+    ]
+    return JsonResponse(data, safe=False)

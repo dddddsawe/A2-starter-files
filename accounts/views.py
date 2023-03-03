@@ -12,6 +12,7 @@ from django.core.validators import validate_email
 from django.http import HttpResponseBadRequest
 from .models import User
 
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -23,6 +24,7 @@ def register(request):
     else:
         form = UserCreationForm()
     return render(request, 'accounts/register.html', {'form': form})
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -36,13 +38,16 @@ def login_view(request):
             messages.error(request, 'Invalid username or password')
     return render(request, 'accounts/login.html')
 
+
 def logout_view(request):
     logout(request)
     return redirect('login')
 
+
 class ProfileView(LoginRequiredMixin, DetailView):
     model = User
     template_name = 'accounts/profile_view.html'
+
 
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
