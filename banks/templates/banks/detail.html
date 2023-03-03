@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>{{ bank.name }}</h1>
+  <p>Swift Code: {{ bank.swift_code }}</p>
+  <p>Institution Number: {{ bank.inst_num }}</p>
+  <p>Description: {{ bank.description }}</p>
+{% endblock %}

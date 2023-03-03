@@ -145,3 +145,20 @@ def bank_all(request):
         } for bank in banks
     ]
     return JsonResponse(data, safe=False)
+
+
+class BankAddView(LoginRequiredMixin, FormView):
+    form_class = BankForm
+    template_name = 'banks/add.html'
+    success_url = reverse_lazy('banks:bank_detail')
+
+    def form_valid(self, form):
+        bank = Bank()
+        bank.name = form.cleaned_data['name']
+        bank.description = form.cleaned_data['description']
+        bank.inst_num = form.cleaned_data['inst_num']
+        bank.swift_code = form.cleaned_data['swift_code']
+        bank.owner = self.request.user
+        bank.save()
+        self.success_url = reverse_lazy('banks:bank_detail', kwargs={'pk': bank.pk})
+        return super().form_valid(form)

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Branch Detail</h1>
+  <p>ID: {{ branch.id }}</p>
+  <p>Name: {{ branch.name }}</p>
+  <p>Bank: {{ branch.bank }}</p>
+  <p>Transit Number: {{ branch.transit_num }}</p>
+  <p>Address: {{ branch.address }}</p>
+  <p>Email: {{ branch.email }}</p>
+  <p>Capacity: {{ branch.capacity }}</p>
+  <p>Last Modified: {{ branch.last_modified }}</p>
+{% endblock %}
