@@ -1,0 +1,16 @@
+<!-- register.html -->
+
+{% if form.errors %}
+<p>There was an error creating your account:</p>
+<ul>
+{% for error in form.errors %}
+  <li>{{ error }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Register</button>
+</form>
