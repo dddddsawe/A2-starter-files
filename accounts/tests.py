@@ -78,7 +78,7 @@ class AuthViewTests(TestCase):
 class ProfileViewTests(TestCase):
     def setUp(self):
         self.view_url = reverse('profile')
-        self.edit_url = reverse('profile_edit')
+        self.edit_url = reverse('edit_profile')
         self.user_data = {
             'username': 'testuser',
             'password': 'testpassword',

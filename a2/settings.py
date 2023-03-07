@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'banks',  # 添加这个应用到已安装的应用列表
+    'banks',
     'accounts'
 ]
 

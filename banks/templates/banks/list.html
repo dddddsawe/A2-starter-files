@@ -1,12 +1,25 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>List_View</title>
+</head>
+<body>
+    <h1>All Banks</h1>
+    <ul>
+        {% for bank in bank_list %}
+            <li>{{ bank.id }}: {{ bank.name }}</li>
+        {% empty %}
+            <li>No banks found.</li>
+        {% endfor %}
+    </ul>
 
-{% block content %}
-  <h1>Banks List</h1>
-  <ul>
-    {% for bank in object_list %}
-      <li><a href="{% url 'banks:bank_detail' bank.id %}">{{ bank.id }} - {{ bank.name }}</a></li>
-    {% empty %}
-      <li>No banks found.</li>
+{% block branches %}
+    <h2>All Branches</h2>
+    <ul>
+    {% for branch in branches %}
+        <li>{{ branch.name }} - {{ branch.transit_num }} - {{ branch.address }} - {{ branch.email }} - {{ branch.capacity }}</li>
     {% endfor %}
-  </ul>
+    </ul>
 {% endblock %}
+</body>
+</html>

@@ -1,8 +1,15 @@
-<h1>Welcome, {{ user.username }}!</h1>
 
-<ul>
-  <li><strong>Username:</strong> {{ user.username }}</li>
-  <li><strong>Email:</strong> {{ user.email }}</li>
-  <li><strong>First name:</strong> {{ user.first_name }}</li>
-  <li><strong>Last name:</strong> {{ user.last_name }}</li>
-</ul>
+{% block content %}
+  <h2>Profile</h2>
+  <p>Username: {{ user.username }}</p>
+  <p>Email: {{ user.email }}</p>
+  <p>First name: {{ user.first_name }}</p>
+  <p>Last name: {{ user.last_name }}</p>
+
+  <h2>Edit Profile</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save changes</button>
+  </form>
+{% endblock %}

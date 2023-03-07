@@ -1,164 +1,160 @@
+from django.http import HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponseNotFound, HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.urls import reverse_lazy, reverse
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import ListView, DetailView, UpdateView, FormView
+from .forms import CreateBranchForm, AddBankForm, AddBranchForm, EditBranchForm
+from .models import Bank, Branch
+from django.http import JsonResponse
 from django.views import View
-from django.views.generic.edit import FormView, UpdateView
-from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse, Http404, HttpResponseBadRequest
-from django.shortcuts import get_object_or_404, render
-from banks.models import Bank, Branch
-from banks.forms import BankForm, BranchForm
-import json
-from django.core import serializers
-from django.core.exceptions import PermissionDenied
 
 
-class BankListView(ListView):
+# checked!!!
+class BankDetailsView(DetailView):
     model = Bank
-    template_name = 'banks/bank_list.html'
-    context_object_name = 'bank_list'
-
-
-class BankDetailView(DetailView):
-    model = Bank
-    template_name = 'banks/bank_detail.html'
+    template_name = 'banks/detail.html'
     context_object_name = 'bank'
 
+    def get_object(self):
+        bank_id = self.kwargs['bank_id']
+        return get_object_or_404(Bank, id=bank_id)
 
-class BranchUpdateView(LoginRequiredMixin, UpdateView):
-    model = Branch
-    form_class = BranchForm
-    template_name = 'banks/edit_branch.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_object().bank.owner != self.request.user:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse_lazy('bank_branch_detail', args=(self.object.pk,))
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['initial'] = {
-            'name': self.object.name,
-            'transit_num': self.object.transit_num,
-            'address': self.object.address,
-            'email': self.object.email,
-            'capacity': self.object.capacity,
+# Not Working now! fuck!
+@method_decorator(csrf_exempt, name='dispatch')
+class BranchDetailsView(DetailView):
+    def get(self, request, branch_id, *args, **kwargs):
+        try:
+            branch = Branch.objects.get(id=kwargs['branch_id'], bank__id=kwargs['bank_id'])
+        except Branch.DoesNotExist:
+            raise Http404("Branch does not exist")
+        data = {
+            "id": branch.id,
+            "name": branch.name,
+            "transit_num": branch.transit_num,
+            "address": branch.address,
+            "email": branch.email,
+            "capacity": branch.capacity,
+            "last_modified": branch.last_modified.isoformat(),
         }
-        return kwargs
+        return JsonResponse(data)
 
 
-class BankCreateView(LoginRequiredMixin, FormView):
-    template_name = 'banks/add_bank.html'
-    form_class = BankForm
-    success_url = reverse_lazy('bank_detail')
+# checked!!!
+class AddBankView(LoginRequiredMixin, FormView):
+    template_name = 'banks/create.html'
+    form_class = AddBankForm
+    success_url = reverse_lazy('banks:bank_detail')
 
     def form_valid(self, form):
         bank = form.save(commit=False)
         bank.owner = self.request.user
         bank.save()
+        self.kwargs['bank_id'] = bank.id
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse_lazy('banks:bank_detail', kwargs={'bank_id': self.kwargs['bank_id']})
 
-class BranchCreateView(LoginRequiredMixin, FormView):
-    template_name = 'banks/add_branch.html'
-    form_class = BranchForm
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+# checked!!!
+class AddBranchView(LoginRequiredMixin, FormView):
+    template_name = 'banks/create.html'
+    form_class = AddBranchForm
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.branch = None
+
+    def get_success_url(self):
+        return reverse_lazy('banks:branch_detail', kwargs={'branch_id': self.branch.id})
 
     def dispatch(self, request, *args, **kwargs):
-        bank_id = kwargs.get('pk')  # 更改为'pk'
-        self.bank = get_object_or_404(Bank, pk=bank_id)
-        if self.bank.owner != self.request.user:
-            raise PermissionDenied
+        bank = get_object_or_404(Bank, id=self.kwargs.get('bank_id'))
+
+        # Check if the current user owns this bank
+        if bank.owner != request.user:
+            return HttpResponseForbidden()
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        branch = form.save(commit=False)
-        branch.bank = self.bank
-        branch.save()
+        bank = get_object_or_404(Bank, id=self.kwargs.get('bank_id'))
+
+        # Create a new branch
+        self.branch = form.save(commit=False)
+        self.branch.bank = bank
+        self.branch.save()
+
         return super().form_valid(form)
 
 
-class BranchDetailsView(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            branch = Branch.objects.get(pk=kwargs['branch_id'], bank__pk=kwargs['bank_id'])
-        except Branch.DoesNotExist:
-            raise Http404('Branch does not exist')
-
-        data = {
-            'id': branch.pk,
-            'name': branch.name,
-            'transit_num': branch.transit_num,
-            'address': branch.address,
-            'email': branch.email,
-            'capacity': branch.capacity,
-            'last_modified': branch.last_modified.isoformat()
-        }
-        return JsonResponse(data)
+# checked!!!
+class BankListView(ListView):
+    template_name = 'banks/list.html'
+    queryset = Bank.objects.all()
+    context_object_name = 'bank_list'
 
 
-class BankBranchListView(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            bank = Bank.objects.get(pk=kwargs['bank_id'])
-        except Bank.DoesNotExist:
-            raise Http404('Bank does not exist')
-        branches = bank.branches.all()
-        data = [{
-            'id': branch.pk,
-            'name': branch.name,
-            'transit_num': branch.transit_num,
-            'address': branch.address,
-            'email': branch.email,
-            'capacity': branch.capacity,
-            'last_modified': branch.last_modified.isoformat()
-        } for branch in branches]
+class BankBranchesView(View):
+    def get(self, request, bank_id, *args, **kwargs):
+        bank = get_object_or_404(Bank, pk=bank_id)
+
+        # Check if the current user owns this bank
+        if bank.owner != request.user:
+            return HttpResponseForbidden()
+
+        branches = Branch.objects.filter(bank=bank)
+        data = []
+        for branch in branches:
+            data.append({
+                'id': branch.pk,
+                'name': branch.name,
+                'transit_num': branch.transit_num,
+                'address': branch.address,
+                'email': branch.email,
+                'capacity': branch.capacity,
+                'last_modified': branch.last_modified.isoformat(),
+            })
         return JsonResponse(data, safe=False)
 
 
-class BankAllView(View):
-    def get(self, request, *args, **kwargs):
-        banks = Bank.objects.all()
-        data = [{'id': bank.pk, 'name': bank.name} for bank in banks]
-        return JsonResponse(data, safe=False)
+class EditBranchView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Branch
+    form_class = EditBranchForm
+    template_name = 'banks/edit_branch.html'
+    context_object_name = 'branch'
 
+    def test_func(self):
+        """
+        Check if the current user owns this branch.
+        """
+        branch = self.get_object()
+        return branch.bank.owner == self.request.user
 
-def bank_all(request):
-    banks = Bank.objects.all().prefetch_related('branches')
-    data = [
-        {
-            'id': bank.pk,
-            'name': bank.name,
-            'branches': [
-                {
-                    'id': branch.pk,
-                    'name': branch.name,
-                    'transit_num': branch.transit_num,
-                    'address': branch.address,
-                    'email': branch.email,
-                    'capacity': branch.capacity,
-                    'last_modified': branch.last_modified.isoformat(),
-                } for branch in bank.branches.all()
-            ],
-        } for bank in banks
-    ]
-    return JsonResponse(data, safe=False)
+    def get_success_url(self):
+        return reverse_lazy('banks:branch_detail', kwargs={'branch_id': self.kwargs['branch_id']})
 
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponse(status=401)
 
-class BankAddView(LoginRequiredMixin, FormView):
-    form_class = BankForm
-    template_name = 'banks/add.html'
-    success_url = reverse_lazy('banks:bank_detail')
+        return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
-        bank = Bank()
-        bank.name = form.cleaned_data['name']
-        bank.description = form.cleaned_data['description']
-        bank.inst_num = form.cleaned_data['inst_num']
-        bank.swift_code = form.cleaned_data['swift_code']
-        bank.owner = self.request.user
-        bank.save()
-        self.success_url = reverse_lazy('banks:bank_detail', kwargs={'pk': bank.pk})
-        return super().form_valid(form)
+    def get_object(self, queryset=None):
+        branch_id = self.kwargs.get('branch_id')
+        branch = get_object_or_404(Branch, id=branch_id)
+
+        # Check if the current user owns this branch's bank
+        if branch.bank.owner != self.request.user:
+            raise HttpResponseForbidden()
+
+        return branch
+

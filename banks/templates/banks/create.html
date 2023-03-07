@@ -1,17 +1,39 @@
-{% extends 'base.html' %}
-
-{% block content %}
-  <h1>Create Bank</h1>
-  <form method="POST">
-    {% csrf_token %}
-    <label for="name">Name:</label>
-    <input type="text" name="name" required><br><br>
-    <label for="description">Description:</label>
-    <textarea name="description" required></textarea><br><br>
-    <label for="inst_num">Institution Number:</label>
-    <input type="text" name="inst_num" required><br><br>
-    <label for="swift_code">Swift Code:</label>
-    <input type="text" name="swift_code" required><br><br>
-    <input type="submit" value="Create">
-  </form>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<body>
+  <header>
+    <h1>Create</h1>
+  </header>
+  <h1>Add Bank</h1>
+  <main>
+<form method="POST" action="{% url 'banks:add_bank' %}">
+  {% csrf_token %}
+  <input type="text" name="name">
+  <input type="text" name="description">
+  <input type="text" name="inst_num">
+  <input type="text" name="swift_code">
+  <button type="submit">Submit</button>
+</form>
+  </main>
+    <h1>Add Branch</h1>
+    <form method="post" action="">
+        {% csrf_token %}
+        <label for="id_name">Name:</label>
+        {{ form.name }}
+        <br>
+        <label for="id_transit_num">Transit Number:</label>
+        {{ form.transit_num }}
+        <br>
+        <label for="id_address">Address:</label>
+        {{ form.address }}
+        <br>
+        <label for="id_email">Email:</label>
+        {{ form.email }}
+        <br>
+        <label for="id_capacity">Capacity:</label>
+        {{ form.capacity }}
+        <br>
+        <button type="submit">Add Branch</button>
+    </form>
+</body>
+</html>

@@ -1,8 +1,20 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Details</title>
+  </head>
+  <body>
+    <header>
+      <h1>{{ bank.name }}</h1>
+    </header>
+    <main>
+      <ul>
+        <li><strong>Swift Code:</strong> {{ bank.swift_code }}</li>
+        <li><strong>Institution Number:</strong> {{ bank.inst_num }}</li>
+        <li><strong>Description:</strong> {{ bank.description }}</li>
+      </ul>
+    </main>
 
-{% block content %}
-  <h1>{{ bank.name }}</h1>
-  <p>Swift Code: {{ bank.swift_code }}</p>
-  <p>Institution Number: {{ bank.inst_num }}</p>
-  <p>Description: {{ bank.description }}</p>
-{% endblock %}
+
+  </body>
+</html>

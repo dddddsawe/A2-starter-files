@@ -1,28 +1,13 @@
 from django.urls import path
-
-from banks.views import (
-    BankListView,
-    BankDetailView,
-    BankCreateView,
-    BranchCreateView,
-    BranchUpdateView,
-    BankBranchListView,
-    BranchDetailsView,
-    BankAllView,
-    BankAddView,
-)
+from . import views
 
 app_name = 'banks'
 
 urlpatterns = [
-    path('banks/', BankListView.as_view(), name='bank_list'),
-    path('banks/<int:pk>/', BankDetailView.as_view(), name='bank_detail'),
-    path('banks/create/', BankCreateView.as_view(), name='bank_create'),
-    path('banks/add/', BankAddView.as_view(), name='bank_add'),
-    path('banks/<int:bank_id>/branches/create/', BranchCreateView.as_view(), name='branch_create'),
-    path('branches/<int:pk>/update/', BranchUpdateView.as_view(), name='branch_update'),
-    path('banks/<int:bank_id>/branches/', BankBranchListView.as_view(), name='bank_branch_list'),
-    path('branches/<int:branch_id>/', BranchDetailsView.as_view(), name='branch_detail'),
-    path('all/json/', BankAllView.as_view(), name='bank_all'),
-    path('banks/add/', BankCreateView.as_view(), name='bank_create'),
+    path('all/', views.BankListView.as_view(), name='bank_list'),  # checked
+    path('add/', views.AddBankView.as_view(), name='add_bank'),  # checked
+    path('<int:bank_id>/details/', views.BankDetailsView.as_view(), name='bank_detail'),  # checked
+    path('<int:bank_id>/branches/add', views.AddBranchView.as_view(), name='add_branch'),  # checked
+    path('branch/<int:branch_id>/details', views.BranchDetailsView.as_view(), name='branch_detail'),  # checked
+    path('branch/<int:branch_id>/edit/', views.EditBranchView.as_view(), name='edit_branch'),  # checked
 ]

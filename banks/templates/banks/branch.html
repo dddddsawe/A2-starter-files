@@ -1,13 +1,18 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<body>
+<head>
+    <title>Branches</title>
+</head>
+<body>
+    <h1>Branches</h1>
+    <ul>
+    {% for branch in branch_list %}
+        <li><a href="{% url 'banks:branch_detail' branch.id %}">{{ branch.name }}</a></li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'banks:branch_create' %}">Create a new branch</a>
+</body>
 
-{% block content %}
-  <h1>Branch Detail</h1>
-  <p>ID: {{ branch.id }}</p>
-  <p>Name: {{ branch.name }}</p>
-  <p>Bank: {{ branch.bank }}</p>
-  <p>Transit Number: {{ branch.transit_num }}</p>
-  <p>Address: {{ branch.address }}</p>
-  <p>Email: {{ branch.email }}</p>
-  <p>Capacity: {{ branch.capacity }}</p>
-  <p>Last Modified: {{ branch.last_modified }}</p>
-{% endblock %}
+
+</html>
