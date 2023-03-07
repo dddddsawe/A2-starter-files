@@ -8,6 +8,7 @@ class Bank(models.Model):
     inst_num = models.CharField(max_length=200)
     swift_code = models.CharField(max_length=200)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name

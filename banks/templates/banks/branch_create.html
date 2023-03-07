@@ -2,16 +2,14 @@
 <html>
 <body>
   <header>
-    <h1>Create</h1>
+    <h1>Add Branch</h1>
   </header>
-  <h1>Add Bank</h1>
   <main>
-<form method="POST" action="{% url 'banks:add_bank' %}">
+<form method="POST" action="{% url 'banks:branch_detail' bank_id=branch.bank.bank.id branch_id=branch.id %}">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Add branch</button>
 </form>
   </main>
-
 </body>
 </html>
