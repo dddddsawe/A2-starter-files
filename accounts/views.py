@@ -23,8 +23,14 @@ class CustomLogoutView(LogoutView):
 @login_required
 def view_profile(request):
     user = request.user
-    context = {'user': user}
-    return render(request, 'accounts/profile.html', context=context)
+    profile_data = {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+    }
+    return JsonResponse(profile_data)
 
 
 class UpdateUserView(LoginRequiredMixin, UpdateView):
